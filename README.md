@@ -1,50 +1,28 @@
-# Market Price Comparison Scanner
+# Compare a clothing tag price to eBay
 
-A tool that helps users decide whether to "cop" or "pass" on an item by scanning its tag, extracting metadata, and comparing it to real-time market prices.
+Paste a resale tag (brand, size, color, price, including a yen amount). The API parses it, converts the price to USD with exchangerate-api.com (fallback: exchangerate.host), and searches the eBay Browse API. The client is hardcoded to the eBay sandbox (`api.sandbox.ebay.com`). The verdict is one of `Strong Cop`, `Cop`, `Fair price`, or `Pass`, based on how far the tag price sits from the listing median. Strong cop is 15% or more under the median. Cop is 5% or more under.
 
-## Features
+There is no `.env.example` in the repo. Set `EBAY_CLIENT_ID` and `EBAY_CLIENT_SECRET` yourself.
 
-- **Tag String Parsing**: Extract brand, size, price, and other metadata from product descriptions
-- **Price Normalization**: Convert prices to USD using live exchange rates
-- **Market Data Fetching**: Query resale platforms (starting with eBay) for comparable listings
-- **Decision Engine**: Get "cop/pass/maybe" recommendations with confidence scores
-- **REST API**: Clean JSON API for integration
+## Evaluate a tag
 
-## Quick Start
-
-1. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-2. Set up environment variables:
-```bash
-cp .env.example .env
-# Edit .env with your eBay API credentials
-```
+`requirements.txt` is FastAPI, Uvicorn, requests, Pydantic, python-dotenv, regex, httpx, redis, and pytest. Redis is listed and is not imported by the scanner.
 
-3. Run the API server:
 ```bash
 python -m src.main
+python -m src.cli "Chrome Hearts hoodie Size L Color Black ¥175560"
 ```
 
-4. Or use the CLI:
-```bash
-python -m src.cli "Chrome Hearts Tokyo Limited Horse Shoeback Print Hoodie SWTSHRT PLV Gender Type : Men's Size :L Color : Black ¥175,560 tax included"
-```
-
-## API Usage
+The server listens on port 8000 (`PORT` overrides it). Interactive docs are at http://localhost:8000/docs.
 
 ```bash
-curl -X POST "http://localhost:8000/evaluate" \
-     -H "Content-Type: application/json" \
-     -d '{"raw_tag": "Chrome Hearts Tokyo Limited Horse Shoeback Print Hoodie SWTSHRT PLV Gender Type : Mens Size :L Color : Black ¥175,560 tax included"}'
+curl -X POST http://localhost:8000/evaluate -H "Content-Type: application/json" -d '{"raw_tag": "Chrome Hearts hoodie Size L 175560 JPY"}'
 ```
 
-## Architecture
+## License
 
-- `src/parser/`: Tag string parsing and metadata extraction
-- `src/currency/`: Currency conversion with live rates
-- `src/market/`: Market data fetching from various sources
-- `src/decision/`: Aggregation and recommendation logic
-- `src/api/`: FastAPI endpoints and models
+[MIT](LICENSE)
